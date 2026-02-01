@@ -1,0 +1,26 @@
+# Secrets - NEVER commit this file!
+secrets.yaml
+
+# ESPHome build files
+.esphome/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

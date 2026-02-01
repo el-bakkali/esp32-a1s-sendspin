@@ -1,0 +1,277 @@
+# ESP32-A1S Audio Kit - Sendspin Configuration
+# Working config for ESPHome 2026.1.x with Music Assistant Sendspin support
+# Board: AI-Thinker ESP32-A1S Audio Kit (ES8388 codec)
+#
+# GitHub: https://github.com/el-bakkali/esp32-a1s-sendspin
+# 
+# Requirements:
+#   - ESPHome 2026.1.x or later
+#   - Music Assistant 2.7.0 beta 19 or later
+#
+# Setup:
+#   1. Copy secrets.yaml.example to secrets.yaml
+#   2. Fill in your WiFi and API credentials
+#   3. Flash with: esphome run esp32-a1s.yaml
+
+esphome:
+  name: esp32-a1s
+  friendly_name: ESP32-A1S
+
+esp32:
+  board: esp-wrover-kit
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-A1S Fallback Hotspot"
+    password: !secret ap_password
+
+captive_portal:
+
+psram:
+
+# ===== ES8388 Audio Codec Configuration =====
+# Reference: https://esphome.io/components/audio_dac/es8388/
+
+i2c:
+  sda: GPIO33
+  scl: GPIO32
+  frequency: 100kHz
+  id: bus_a
+
+audio_dac:
+  - platform: es8388
+    id: es8388_dac
+
+select:
+  - platform: es8388
+    es8388_id: es8388_dac
+    dac_output:
+      name: "DAC Output"
+    adc_input_mic:
+      name: "ADC Input MIC"
+
+i2s_audio:
+  id: i2s_output
+  i2s_lrclk_pin: GPIO25
+  i2s_bclk_pin: GPIO27
+  i2s_mclk_pin: GPIO0
+
+# ===== Amplifier Control =====
+switch:
+  - platform: gpio
+    pin: GPIO21
+    id: mute_switch
+    name: "AMP Switch"
+    restore_mode: ALWAYS_ON
+
+# ===== Microphone =====
+microphone:
+  - platform: i2s_audio
+    i2s_din_pin: GPIO35
+    id: mic1
+    adc_type: external
+    pdm: false
+    sample_rate: 16000
+    bits_per_sample: 16bit
+
+# ===== Hardware Buttons & Sensors =====
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: true
+      mode:
+        input: true
+    name: "Jack Status"
+
+  - platform: gpio
+    pin:
+      number: GPIO036
+      inverted: true
+    name: "Key 1"
+    filters:
+      - delayed_off: 10ms
+
+  - platform: gpio
+    pin:
+      number: GPIO013
+      inverted: true
+    name: "Key 2"
+    filters:
+      - delayed_off: 10ms
+
+  - platform: gpio
+    pin:
+      number: GPIO019
+      inverted: true
+    name: "Key 3"
+    filters:
+      - delayed_off: 10ms
+
+  - platform: gpio
+    pin:
+      number: GPIO023
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Key 4"
+    filters:
+      - delayed_off: 10ms
+
+  - platform: gpio
+    pin:
+      number: GPIO018
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Key 5"
+    filters:
+      - delayed_off: 10ms
+
+  - platform: gpio
+    pin:
+      number: GPIO005
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Key 6"
+    filters:
+      - delayed_off: 10ms
+
+# ===== Status LED =====
+output:
+  - platform: ledc
+    pin:
+      number: GPIO22
+      inverted: true
+    id: output_led
+
+light:
+  - platform: binary
+    name: "Red LED"
+    id: red_led
+    output: output_led
+    restore_mode: ALWAYS_OFF
+
+# ===== Sendspin External Components =====
+# Using specific commits/PRs for ESPHome 2026.1.x compatibility
+# These may be simplified once ESPHome 2026.2.0 is released
+external_components:
+  - source:
+      type: git
+      url: https://github.com/esphome/esphome
+      ref: 9148832ea4e54907bad71a24d4ced1ce6c862433
+    components: [audio]
+  - source: github://pr#12253
+    components: [mixer]
+    refresh: 0s
+  - source: github://pr#12254
+    components: [resampler]
+    refresh: 0s
+  - source: github://pr#12258
+    components: [media_player]
+    refresh: 0s
+  - source: github://pr#12284
+    components: [mdns, sendspin]
+    refresh: 0s
+  - source: github://pr#12429
+    components: [media_source, speaker_source]
+    refresh: 0s
+
+# ===== Speaker & Audio Pipeline =====
+speaker:
+  - platform: i2s_audio
+    i2s_audio_id: i2s_output
+    sample_rate: 48000
+    id: i2s_speaker_id
+    i2s_dout_pin: GPIO26
+    bits_per_sample: 32bit
+    dac_type: external
+    channel: stereo
+    timeout: never
+    buffer_duration: 100ms
+    audio_dac: es8388_dac
+
+  - platform: mixer
+    id: mixer_speaker_id
+    output_speaker: i2s_speaker_id
+    num_channels: 2
+    source_speakers:
+      - id: announcement_mixer_input
+        timeout: never
+      - id: media_mixer_input
+        timeout: never
+
+  - platform: resampler
+    id: announcement_resampling_speaker
+    output_speaker: announcement_mixer_input
+    sample_rate: 48000
+    bits_per_sample: 16
+
+  - platform: resampler
+    id: media_resampling_speaker
+    output_speaker: media_mixer_input
+    sample_rate: 48000
+    bits_per_sample: 16
+
+# ===== Sendspin Media Player =====
+sendspin:
+  id: sendspin_hub
+
+media_source:
+  - platform: sendspin
+    id: sendspin_source
+
+media_player:
+  - platform: speaker_source
+    name: Sendspin Media Player
+    id: sendspin_media_player
+    volume_min: 0.4
+    volume_max: 0.85
+    announcement_speaker: announcement_resampling_speaker
+    media_speaker: media_resampling_speaker
+    sources:
+      - sendspin_source
+
+# ===== Track Metadata (Optional) =====
+text_sensor:
+  - platform: sendspin
+    type: title
+    name: Track Title
+
+  - platform: sendspin
+    type: artist
+    name: Artist
+
+  - platform: sendspin
+    type: album
+    name: Album
+
+  - platform: sendspin
+    type: year
+    name: Year
+
+  - platform: sendspin
+    type: track
+    name: Track Number
