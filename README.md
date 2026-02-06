@@ -90,11 +90,25 @@ Or use the ESPHome Dashboard in Home Assistant.
 | Key 5 | GPIO18 | Button |
 | Key 6 | GPIO5 | Button |
 
+## DIP Switch Configuration
+
+For the ESP32 Audio Kit V2.2, set the DIP switches as follows:
+
+| Switch | Position | Purpose |
+|--------|----------|---------|
+| 1 | ON | |
+| 2 | ON | |
+| 3 | ON | |
+| 4 | OFF | |
+| 5 | OFF | |
+
+> **Note:** Incorrect DIP switch settings can prevent audio output or interfere with flashing/serial communication.
+
 ## Troubleshooting
 
 ### No Audio Output
 
-1. **Check DAC Output setting** - In Home Assistant, set "DAC Output" to `BOTH` or `LINE1`
+1. **Check DAC Output setting** - DAC Output is automatically set to `BOTH` on boot. If changed, verify it's set back to `BOTH` in Home Assistant
 2. **Verify AMP Switch** - Make sure "AMP Switch" is ON
 3. **Check volume** - Ensure media player volume is not at minimum
 4. **Clear ESPHome cache** - Delete `.esphome/external_components/` folder and recompile
