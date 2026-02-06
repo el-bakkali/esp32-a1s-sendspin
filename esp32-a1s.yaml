@@ -16,6 +16,12 @@
 esphome:
   name: esp32-a1s
   friendly_name: ESP32-A1S
+  on_boot:
+    priority: -100
+    then:
+      - select.set:
+          id: dac_output_select
+          option: "BOTH"
 
 esp32:
   board: esp-wrover-kit
@@ -64,6 +70,7 @@ select:
   - platform: es8388
     es8388_id: es8388_dac
     dac_output:
+      id: dac_output_select
       name: "DAC Output"
     adc_input_mic:
       name: "ADC Input MIC"
