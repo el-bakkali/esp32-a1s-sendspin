@@ -183,38 +183,26 @@ light:
 
 # --- SendSpin & Media Player Logic (Standard) ---
 # ===== Sendspin External Components =====
-# Using commit 9148832 for audio to avoid include_builtin_idf_component issue
+# adapted for esphome version 2026.2.4
 external_components:
-  - source:
-      # PR#12429: media_source, speaker_source, file, http_request
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: a6c403deb7603d316dce2820897902e01c3695cc
+  - source: github://pr#12429
     refresh: 0s
     components: [file, http_request, media_source, speaker_source]
-  - source:
-      # PR#12284: sendspin
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: 119a5c25a483c58b3d58a35c8cec95495c6491c2
+
+  - source: github://pr#12284
+    refresh: 0s
     components: [sendspin]
-  - source:
-      # PR#12258: media_player (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: 264c8faedd0ab956b0437ec2ecc0bacae1708923
+
+  - source: github://pr#12258
+    refresh: 0s
     components: [media_player]
-  - source:
-      # PR#14013: mdns (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: ba7134ee3f870ce00d2990d84b142b734028330f
+
+  - source: github://pr#14013
+    refresh: 0s
     components: [mdns]
-  - source:
-      # PR#14108: audio with request_flac_support (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: d2026b4cd74bbeb9b86941bf1887f3d93d639387
+
+  - source: github://pr#14108
+    refresh: 0s
     components: [audio]
 
 # ===== Speaker & Audio Pipeline =====
