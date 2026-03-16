@@ -1,6 +1,6 @@
 # ESP32-A1S Audio Kit - Sendspin Configuration
 
-[![ESPHome](https://img.shields.io/badge/ESPHome-2026.1.x-blue.svg)](https://esphome.io/)
+[![ESPHome](https://img.shields.io/badge/ESPHome-2026.2.x-blue.svg)](https://esphome.io/)
 [![Music Assistant](https://img.shields.io/badge/Music%20Assistant-Sendspin-green.svg)](https://music-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -21,10 +21,11 @@ A working ESPHome configuration for the **AI-Thinker ESP32-A1S Audio Kit** with 
 
 - **Hardware**: AI-Thinker ESP32-A1S Audio Kit (with ES8388 codec)
 - **Software**: 
-  - ESPHome 2026.1.x or later
+  - ESPHome 2026.2.x or later
   - Home Assistant
   - Music Assistant 2.7.0 beta 19 or later
 
+> **⚠️ Important Notice:** This configuration relies on **external components from unmerged ESPHome pull requests**. These PRs are work-in-progress and may change or break at any time as upstream development continues. You will need to update commit references when breaking changes occur. **If you prefer a stable, low-maintenance setup, consider waiting until these components are officially merged into an ESPHome stable release.** This repo will be updated accordingly when that happens.
 ## Quick Start
 
 ### 1. Clone this repository
@@ -115,9 +116,16 @@ For the ESP32 Audio Kit V2.2, set the DIP switches as follows:
 
 ### Compilation Errors
 
-If you encounter `include_builtin_idf_component` errors:
-- This config uses a specific audio component commit that works with ESPHome 2026.1.x
-- Once ESPHome 2026.2.0 is released, the external components can be simplified
+If you encounter compilation errors with external components:
+- Make sure you are running **ESPHome 2026.2.x or later** — earlier versions have known mDNS and audio component incompatibilities
+- Delete your `.esphome/external_components/` cache folder and recompile to clear stale component versions
+- Since this config uses pinned commit hashes from upstream PRs, updates to those PRs may require new commit references — check this repo for the latest tested config
+
+### Sendspin Player Not Appearing in Music Assistant
+
+- Verify your device logs show mDNS registration on boot (look for `[mdns:194]: mDNS:` lines)
+- If running Music Assistant in Docker, it **must** be in host network mode to receive mDNS broadcasts
+- If running as a Home Assistant add-on, mDNS should work automatically
 
 ### Connection Issues
 
@@ -129,16 +137,17 @@ If you encounter `include_builtin_idf_component` errors:
 
 This configuration uses several external components from ESPHome pull requests:
 
-| Component | PR | Description |
-|-----------|-----|-------------|
-| audio | [commit 9148832](https://github.com/esphome/esphome/commit/9148832ea4e54907bad71a24d4ced1ce6c862433) | Audio processing |
-| mixer | [#12253](https://github.com/esphome/esphome/pull/12253) | Audio mixer |
-| resampler | [#12254](https://github.com/esphome/esphome/pull/12254) | Sample rate conversion |
-| media_player | [#12258](https://github.com/esphome/esphome/pull/12258) | Media player platform |
-| sendspin | [#12284](https://github.com/esphome/esphome/pull/12284) | Sendspin protocol |
-| speaker_source | [#12429](https://github.com/esphome/esphome/pull/12429) | Speaker source media player |
+| Component | PR/Commit | Description |
+|-----------|-----------|-------------|
+| audio | [PR#14108](https://github.com/esphome/esphome/pull/14108) | Audio processing with FLAC support |
+| mdns | [PR#14013](https://github.com/esphome/esphome/pull/14013) | mDNS service registration (required for Sendspin discovery) |
+| mixer | [PR#12253](https://github.com/esphome/esphome/pull/12253) | Audio mixer |
+| resampler | [PR#12254](https://github.com/esphome/esphome/pull/12254) | Sample rate conversion |
+| media_player | [PR#12258](https://github.com/esphome/esphome/pull/12258) | Media player platform |
+| sendspin | [PR#12284](https://github.com/esphome/esphome/pull/12284) | Sendspin protocol |
+| speaker_source | [PR#12429](https://github.com/esphome/esphome/pull/12429) | Speaker source media player |
 
-> **Note**: These are work-in-progress PRs. Configuration may need updates as they are merged into ESPHome.
+> **⚠️ Warning**: These are work-in-progress PRs that have **not yet been merged** into ESPHome stable. The configuration uses **pinned commit hashes** for reproducibility, but upstream changes may require updates. If you experience issues after an ESPHome update, check this repo for updated references or consider waiting for these components to land in an official ESPHome release.
 
 ## Contributing
 

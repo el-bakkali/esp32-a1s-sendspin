@@ -1,11 +1,11 @@
 # ESP32-A1S Audio Kit - Sendspin Configuration
-# Working config for ESPHome 2026.1.x with Music Assistant Sendspin support
+# Working config for ESPHome 2026.2.x with Music Assistant Sendspin support
 # Board: AI-Thinker ESP32-A1S Audio Kit (ES8388 codec)
 #
 # GitHub: https://github.com/el-bakkali/esp32-a1s-sendspin
-# 
+#
 # Requirements:
-#   - ESPHome 2026.1.x or later
+#   - ESPHome 2026.2.x or later
 #   - Music Assistant 2.7.0 beta 19 or later
 #
 # Setup:
@@ -167,23 +167,18 @@ binary_sensor:
       - delayed_off: 10ms
 
 # ===== Status LED =====
-output:
-  - platform: ledc
+light:
+  - platform: status_led
+    name: "Red LED"
     pin:
       number: GPIO22
       inverted: true
-    id: output_led
-
-light:
-  - platform: binary
-    name: "Red LED"
-    id: red_led
-    output: output_led
-    restore_mode: ALWAYS_OFF
 
 # --- SendSpin & Media Player Logic (Standard) ---
 # ===== Sendspin External Components =====
-# Using commit 9148832 for audio to avoid include_builtin_idf_component issue
+# Using pinned commit hashes for stability (tested with ESPHome 2026.2.4)
+# NOTE: These reference work-in-progress PRs. Consider waiting for official
+# ESPHome release if you prefer stability over bleeding-edge features.
 external_components:
   - source:
       # PR#12429: media_source, speaker_source, file, http_request
@@ -224,7 +219,7 @@ speaker:
     sample_rate: 48000
     id: i2s_speaker_id
     i2s_dout_pin: GPIO26
-    bits_per_sample: 32bit
+    bits_per_sample: 16bit
     dac_type: external
     channel: stereo
     timeout: never
@@ -265,8 +260,8 @@ media_player:
   - platform: speaker_source
     name: Sendspin Media Player
     id: sendspin_media_player
-    volume_min: 0.4
-    volume_max: 0.85
+    volume_min: 40%
+    volume_max: 100%
     announcement_speaker: announcement_resampling_speaker
     media_speaker: media_resampling_speaker
     sources:
