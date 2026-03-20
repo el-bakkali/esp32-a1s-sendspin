@@ -1,6 +1,6 @@
 # ESP32-A1S Audio Kit - Sendspin Configuration
 
-[![ESPHome](https://img.shields.io/badge/ESPHome-2026.2.x-blue.svg)](https://esphome.io/)
+[![ESPHome](https://img.shields.io/badge/ESPHome-2026.3.x-blue.svg)](https://esphome.io/)
 [![Music Assistant](https://img.shields.io/badge/Music%20Assistant-Sendspin-green.svg)](https://music-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -21,7 +21,7 @@ A working ESPHome configuration for the **AI-Thinker ESP32-A1S Audio Kit** with 
 
 - **Hardware**: AI-Thinker ESP32-A1S Audio Kit (with ES8388 codec)
 - **Software**: 
-  - ESPHome 2026.2.x or later
+  - ESPHome 2026.3.x or later
   - Home Assistant
   - Music Assistant 2.7.0 beta 19 or later
 
@@ -117,7 +117,7 @@ For the ESP32 Audio Kit V2.2, set the DIP switches as follows:
 ### Compilation Errors
 
 If you encounter compilation errors with external components:
-- Make sure you are running **ESPHome 2026.2.x or later** — earlier versions have known mDNS and audio component incompatibilities
+- Make sure you are running **ESPHome 2026.3.x or later** — earlier versions have known mDNS and audio component incompatibilities
 - Delete your `.esphome/external_components/` cache folder and recompile to clear stale component versions
 - Since this config uses pinned commit hashes from upstream PRs, updates to those PRs may require new commit references — check this repo for the latest tested config
 
@@ -139,13 +139,7 @@ This configuration uses several external components from ESPHome pull requests:
 
 | Component | PR/Commit | Description |
 |-----------|-----------|-------------|
-| audio | [PR#14108](https://github.com/esphome/esphome/pull/14108) | Audio processing with FLAC support |
-| mdns | [PR#14013](https://github.com/esphome/esphome/pull/14013) | mDNS service registration (required for Sendspin discovery) |
-| mixer | [PR#12253](https://github.com/esphome/esphome/pull/12253) | Audio mixer |
-| resampler | [PR#12254](https://github.com/esphome/esphome/pull/12254) | Sample rate conversion |
-| media_player | [PR#12258](https://github.com/esphome/esphome/pull/12258) | Media player platform |
-| sendspin | [PR#12284](https://github.com/esphome/esphome/pull/12284) | Sendspin protocol |
-| speaker_source | [PR#12429](https://github.com/esphome/esphome/pull/12429) | Speaker source media player |
+| sendspin | [PR#14933](https://github.com/esphome/esphome/pull/14933) | Sendspin protocol |
 
 > **⚠️ Warning**: These are work-in-progress PRs that have **not yet been merged** into ESPHome stable. The configuration uses **pinned commit hashes** for reproducibility, but upstream changes may require updates. If you experience issues after an ESPHome update, check this repo for updated references or consider waiting for these components to land in an official ESPHome release.
 
@@ -167,5 +161,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Related Links
 
 - [ESPHome ES8388 Documentation](https://esphome.io/components/audio_dac/es8388/)
-- [Sendspin PR #12284](https://github.com/esphome/esphome/pull/12284)
+- [Sendspin PR#14933](https://github.com/esphome/esphome/pull/14933)
 - [Music Assistant](https://music-assistant.io/)
