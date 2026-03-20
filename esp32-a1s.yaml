@@ -1,11 +1,11 @@
 # ESP32-A1S Audio Kit - Sendspin Configuration
-# Working config for ESPHome 2026.2.x with Music Assistant Sendspin support
+# Working config for ESPHome 2026.3.x with Music Assistant Sendspin support
 # Board: AI-Thinker ESP32-A1S Audio Kit (ES8388 codec)
 #
 # GitHub: https://github.com/el-bakkali/esp32-a1s-sendspin
 #
 # Requirements:
-#   - ESPHome 2026.2.x or later
+#   - ESPHome 2026.3.x or later
 #   - Music Assistant 2.7.0 beta 19 or later
 #
 # Setup:
@@ -176,48 +176,18 @@ light:
 
 # --- SendSpin & Media Player Logic (Standard) ---
 # ===== Sendspin External Components =====
-# Using pinned commit hashes for stability (tested with ESPHome 2026.2.4)
-# NOTE: These reference work-in-progress PRs. Consider waiting for official
-# ESPHome release if you prefer stability over bleeding-edge features.
+# Using commit 9148832 for audio to avoid include_builtin_idf_component issue
 external_components:
-  - source:
-      # PR#12429: media_source, speaker_source, file, http_request
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: a6c403deb7603d316dce2820897902e01c3695cc
-    refresh: 0s
-    components: [file, http_request, media_source, speaker_source]
-  - source:
-      # PR#12284: sendspin
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: 119a5c25a483c58b3d58a35c8cec95495c6491c2
-    components: [sendspin]
-  - source:
-      # PR#12258: media_player (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: 264c8faedd0ab956b0437ec2ecc0bacae1708923
-    components: [media_player]
-  - source:
-      # PR#14013: mdns (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: ba7134ee3f870ce00d2990d84b142b734028330f
-    components: [mdns]
-  - source:
-      # PR#14108: audio with request_flac_support (squash merge on dev, not yet in stable)
-      type: git
-      url: https://github.com/esphome/esphome
-      ref: d2026b4cd74bbeb9b86941bf1887f3d93d639387
-    components: [audio]
+  - source: github://pr#14933
+    components: [const, generic_image, media_source, sendspin]
+    refresh: 1h
 
-# ===== Speaker & Audio Pipeline =====
+# ===== Speaker Configuration =====
 speaker:
   - platform: i2s_audio
     i2s_audio_id: i2s_output
     sample_rate: 48000
-    id: i2s_speaker_id
+    id: i2s_speaker_output
     i2s_dout_pin: GPIO26
     bits_per_sample: 16bit
     dac_type: external
@@ -226,31 +196,10 @@ speaker:
     buffer_duration: 100ms
     audio_dac: es8388_dac
 
-  - platform: mixer
-    id: mixer_speaker_id
-    output_speaker: i2s_speaker_id
-    num_channels: 2
-    source_speakers:
-      - id: announcement_mixer_input
-        timeout: never
-      - id: media_mixer_input
-        timeout: never
-
-  - platform: resampler
-    id: announcement_resampling_speaker
-    output_speaker: announcement_mixer_input
-    sample_rate: 48000
-    bits_per_sample: 16
-
-  - platform: resampler
-    id: media_resampling_speaker
-    output_speaker: media_mixer_input
-    sample_rate: 48000
-    bits_per_sample: 16
-
-# ===== Sendspin Media Player =====
+# ===== Sendspin Configuration =====
 sendspin:
   id: sendspin_hub
+  task_stack_in_psram: true
 
 media_source:
   - platform: sendspin
@@ -258,14 +207,12 @@ media_source:
 
 media_player:
   - platform: speaker_source
-    name: Sendspin Media Player
     id: sendspin_media_player
-    volume_min: 40%
-    volume_max: 100%
-    announcement_speaker: announcement_resampling_speaker
-    media_speaker: media_resampling_speaker
-    sources:
-      - sendspin_source
+    name: Sendspin Media Player
+    media_pipeline:
+      speaker: i2s_speaker_output
+      sources:
+        - sendspin_source
 
 # ===== Track Metadata (Optional) =====
 text_sensor:
@@ -288,3 +235,9 @@ text_sensor:
   - platform: sendspin
     type: track
     name: Track Number
+
+    # Only necessary for sensor metadata
+sensor:
+  - platform: sendspin
+    type: track_duration
+    id: sendspin_track_duration
