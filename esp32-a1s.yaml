@@ -176,7 +176,6 @@ light:
 
 # --- SendSpin & Media Player Logic (Standard) ---
 # ===== Sendspin External Components =====
-# Using commit 9148832 for audio to avoid include_builtin_idf_component issue
 external_components:
   - source: github://pr#14933
     components: [const, generic_image, media_source, sendspin]
