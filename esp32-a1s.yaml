@@ -192,6 +192,7 @@ sendspin:
 media_source:
   - platform: sendspin
     id: sendspin_source
+    decode_memory: internal
 
 # Media player entity exposed to Home Assistant / Music Assistant
 media_player:
