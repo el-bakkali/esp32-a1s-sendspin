@@ -1,22 +1,14 @@
-# ESP32-A1S Audio Kit - Sendspin Configuration
-# Working config for ESPHome 2026.3.x with Music Assistant Sendspin support
-# Board: AI-Thinker ESP32-A1S Audio Kit (ES8388 codec)
-#
-# GitHub: https://github.com/el-bakkali/esp32-a1s-sendspin
-#
-# Requirements:
-#   - ESPHome 2026.3.x or later
-#   - Music Assistant 2.7.0 beta 19 or later
-#
-# Setup:
-#   1. Copy secrets.yaml.example to secrets.yaml
-#   2. Fill in your WiFi and API credentials
-#   3. Flash with: esphome run esp32-a1s.yaml
+# ESP32-A1S Audio Kit -- Sendspin (Music Assistant multi-room) config
+# Board:    AI-Thinker ESP32-A1S Audio Kit (ES8388 codec)
+# Requires: ESPHome >= 2026.5.0 (sendspin in core), Music Assistant >= 2.7.0b19
+# Repo:     https://github.com/el-bakkali/esp32-a1s-sendspin
+# Setup:    cp secrets.yaml.example secrets.yaml  ->  esphome run esp32-a1s.yaml
 
 esphome:
   name: esp32-a1s
   friendly_name: ESP32-A1S
   on_boot:
+    # Route audio to both headphone jack and speaker amp at startup
     priority: -100
     then:
       - select.set:
@@ -28,10 +20,8 @@ esp32:
   framework:
     type: esp-idf
 
-# Enable logging
 logger:
 
-# Enable Home Assistant API
 api:
   encryption:
     key: !secret api_encryption_key
@@ -43,19 +33,18 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  # Fallback AP / captive portal when WiFi is unavailable
   ap:
     ssid: "Esp32-A1S Fallback Hotspot"
     password: !secret ap_password
 
 captive_portal:
 
+# PSRAM required: sendspin task stack and audio decode buffers live here
 psram:
 
-# ===== ES8388 Audio Codec Configuration =====
-# Reference: https://esphome.io/components/audio_dac/es8388/
-
+# ===== ES8388 audio codec (I2C control + I2S audio) =====
+# Docs: https://esphome.io/components/audio_dac/es8388/
 i2c:
   sda: GPIO33
   scl: GPIO32
@@ -81,7 +70,7 @@ i2s_audio:
   i2s_bclk_pin: GPIO27
   i2s_mclk_pin: GPIO0
 
-# ===== Amplifier Control =====
+# ===== On-board speaker amp enable (GPIO21) =====
 switch:
   - platform: gpio
     pin: GPIO21
@@ -89,7 +78,7 @@ switch:
     name: "AMP Switch"
     restore_mode: ALWAYS_ON
 
-# ===== Microphone =====
+# ===== On-board microphone (I2S from ES8388 ADC) =====
 microphone:
   - platform: i2s_audio
     i2s_din_pin: GPIO35
@@ -99,8 +88,9 @@ microphone:
     sample_rate: 16000
     bits_per_sample: 16bit
 
-# ===== Hardware Buttons & Sensors =====
+# ===== On-board buttons + headphone-jack detect =====
 binary_sensor:
+  # Headphone jack insertion sensor
   - platform: gpio
     pin:
       number: GPIO39
@@ -109,6 +99,7 @@ binary_sensor:
         input: true
     name: "Jack Status"
 
+  # Keys 1-6: physical buttons on the board
   - platform: gpio
     pin:
       number: GPIO036
@@ -166,7 +157,7 @@ binary_sensor:
     filters:
       - delayed_off: 10ms
 
-# ===== Status LED =====
+# ===== Onboard status LED =====
 light:
   - platform: status_led
     name: "Red LED"
@@ -174,14 +165,11 @@ light:
       number: GPIO22
       inverted: true
 
-# --- SendSpin & Media Player Logic (Standard) ---
-# ===== Sendspin External Components =====
-external_components:
-  - source: github://pr#14933
-    components: [const, generic_image, media_source, sendspin]
-    refresh: 1h
+# ============================================================
+#  Sendspin multi-room audio (core component since 2026.5.0)
+# ============================================================
 
-# ===== Speaker Configuration =====
+# I2S speaker output -- consumes the sendspin audio pipeline
 speaker:
   - platform: i2s_audio
     i2s_audio_id: i2s_output
@@ -195,15 +183,17 @@ speaker:
     buffer_duration: 100ms
     audio_dac: es8388_dac
 
-# ===== Sendspin Configuration =====
+# Sendspin hub: discovers the Sendspin server via mDNS (TCP 8928)
 sendspin:
   id: sendspin_hub
   task_stack_in_psram: true
 
+# Synchronized audio stream from the Sendspin group
 media_source:
   - platform: sendspin
     id: sendspin_source
 
+# Media player entity exposed to Home Assistant / Music Assistant
 media_player:
   - platform: speaker_source
     id: sendspin_media_player
@@ -213,7 +203,7 @@ media_player:
       sources:
         - sendspin_source
 
-# ===== Track Metadata (Optional) =====
+# ===== Track metadata (optional, drives HA entities / displays) =====
 text_sensor:
   - platform: sendspin
     type: title
@@ -235,7 +225,7 @@ text_sensor:
     type: track
     name: Track Number
 
-    # Only necessary for sensor metadata
+# Numeric metadata (track duration, progress, etc.)
 sensor:
   - platform: sendspin
     type: track_duration
